@@ -16,8 +16,9 @@ namespace AstarPathFinder
         private Node startNode;
         private Node endNode;
         private SearchParameters searchParameters;
+        private bool vonNeumann;
 
-        public PathFinder(SearchParameters searchParameters)
+        public PathFinder(SearchParameters searchParameters,bool ivonNeumann)
         {
             this.searchParameters = searchParameters;
             InitializeNodes();
@@ -26,7 +27,7 @@ namespace AstarPathFinder
             startNode.State = NodeState.Open;
             id = this.searchParameters.EndNodeID;
             this.endNode = this.nodes[id[0], id[1], id[2]];
-
+            this.vonNeumann = ivonNeumann;
         }
 
 
@@ -94,8 +95,8 @@ namespace AstarPathFinder
         private List<Node> GetAdjacentWalkableNodes(Node fromNode)
         {
             List<Node> walkableNodes = new List<Node>();
-            List<Node> nextNodes = GetAdjacentNodes(fromNode);
-
+            List<Node> nextNodes;
+            nextNodes = this.vonNeumann ? GetVonNeumannAdjacentNodes(fromNode) : GetMooreAdjacentNodes(fromNode);
             foreach (var node in nextNodes)
             {
 
@@ -122,7 +123,24 @@ namespace AstarPathFinder
             return walkableNodes;
         }
 
-        private List<Node> GetAdjacentNodes(Node fromLocation)
+        private List<Node> GetVonNeumannAdjacentNodes(Node fromLocation)
+        {
+            List<Node> locations = new List<Node>();
+            var id = fromLocation.ID;
+            int x = id[0];
+            int y = id[1];
+            int z = id[2];
+            var points = this.nodes;
+            if (z - 1 >= 0) locations.Add(points[x, y, z - 1]);
+            if (x - 1 >= 0 && y >= 0) locations.Add(points[x - 1, y , z]);
+            if (y - 1 >= 0) locations.Add(points[x , y - 1, z]);
+            if (y + 1 < this.width) locations.Add(points[x , y + 1, z]);
+            if (x + 1 < this.length) locations.Add(points[x + 1, y, z]);
+            if (z + 1 < this.height) locations.Add(points[x + 0, y - 0, z + 1]);
+            return locations;
+        }
+
+        private List<Node> GetMooreAdjacentNodes(Node fromLocation)
         {
             List<Node> locations = new List<Node>();
             var id = fromLocation.ID;

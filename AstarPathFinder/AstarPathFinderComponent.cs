@@ -20,6 +20,7 @@ namespace AstarPathFinder
         private List<Brep> screenedObstacles = new List<Brep>();
         private bool hide = false;
         private bool directpath = true;
+        private bool vonNeumann = false;
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
         /// constructor without any arguments.
@@ -75,7 +76,7 @@ namespace AstarPathFinder
             DA.GetData<double>("Resolution", ref iResolution);
             DA.SetDataList(0, null);
 
-            PathFinderGhSolver iPathFinderGhSolver = new PathFinderGhSolver(iStartPoint,iEndPoint,iObstacles,iResolution, DocumentTolerance());
+            PathFinderGhSolver iPathFinderGhSolver = new PathFinderGhSolver(iStartPoint,iEndPoint,iObstacles,iResolution, DocumentTolerance(), vonNeumann);
             iPathFinderGhSolver.Run();
             if (iPathFinderGhSolver.Running)
             {
@@ -208,22 +209,38 @@ namespace AstarPathFinder
         protected override void AppendAdditionalComponentMenuItems(System.Windows.Forms.ToolStripDropDown menu)
         {
             base.AppendAdditionalComponentMenuItems(menu);
-            ToolStripMenuItem item = Menu_AppendItem(menu, "Show/Hide Grid", HideGrid_Click);
-            item.ToolTipText = @"Hide or Show the environment Grid";
+            ToolStripMenuItem item1 = Menu_AppendItem(menu, "Show/Hide Grid", HideGrid_Click);
+            item1.ToolTipText = @"Hide or Show the environment Grid";
+            ToolStripMenuItem item2 = Menu_AppendItem(menu, "vonNeumann", vonNeumann_Click);
+            item2.ToolTipText = @"Change path finder to von Neumann neighbourhoods(6)";
+            ToolStripMenuItem item3 = Menu_AppendItem(menu, "Moore", Moore_Click);
+            item3.ToolTipText = @"Change path finder to Moore neighbourhoods(26)";
+        }
+
+        private void vonNeumann_Click(object sender, EventArgs e)
+        {
+            this.vonNeumann = true;
+            this.Message = "vonNeumann";
+            ExpireSolution(true);
+        }
+
+        private void Moore_Click(object sender, EventArgs e)
+        {
+            this.vonNeumann = false;
+            this.Message = "Moore";
+            ExpireSolution(true);
         }
 
         private void HideGrid_Click(object sender, EventArgs e)
         {
             hide = !hide;
-            if (hide) this.Message = "GridHidden";
-            if (!hide) this.Message = "GridShown";
             ExpireSolution(true);
         }
 
         private void UpdateMessage()
         {
-            if (hide) this.Message = "GridHidden";
-            if (!hide) this.Message = "GridShown";
+            if (vonNeumann) this.Message = "vonNeumann";
+            if (!vonNeumann) this.Message = "Moore";
         }
         
     }

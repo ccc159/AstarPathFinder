@@ -24,8 +24,9 @@ namespace AstarPathFinder
         public bool Running { get; set; }
         public string Message { get; set; }
         public double Tolerence { get; set; }
+        public bool vonNeumann { get; set; }
 
-        public PathFinderGhSolver(Point3d startPoint, Point3d endPoint, List<Brep> obstacles,double resolution, double tolerence )
+        public PathFinderGhSolver(Point3d startPoint, Point3d endPoint, List<Brep> obstacles,double resolution, double tolerence, bool VonNeumann )
         {
             this.StartPoint = startPoint;
             this.EndPoint = endPoint;
@@ -35,7 +36,10 @@ namespace AstarPathFinder
             this.Distance = StartPoint.DistanceTo(EndPoint);
             this.Tolerence = tolerence;
             this.DirectPath = Utils.HaveDirectPath(StartPoint, EndPoint, Obstacles);
-            
+            this.vonNeumann = VonNeumann;
+
+
+
         }
 
         public void Run()
@@ -66,7 +70,7 @@ namespace AstarPathFinder
             else if (this.BoundingBoxCondition == 0 || this.BoundingBoxCondition == 1)
             {
                 this.TheSearchParameters = new SearchParameters(TheBoundingBox, StartPoint, EndPoint, ScreenedObstacles, Resolution);
-                PathFinder iPathFinder = new PathFinder(TheSearchParameters);
+                PathFinder iPathFinder = new PathFinder(TheSearchParameters,this.vonNeumann);
                 Path = new List<Point3d>();
                 Path = iPathFinder.FindPath();
                 if (Path.Count == 0)
