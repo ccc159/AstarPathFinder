@@ -199,10 +199,6 @@ namespace AstarPathFinder
                     }
                 }
             }
-            //foreach (var abox in Boxes)
-            //{
-            //    abox.Transform(Transform.Translation(moveToStartPoint));
-            //}
             Point3d ClosestToEndPoint = this.Boxes[this.EndNodeID[0], this.EndNodeID[1], this.EndNodeID[2]].Center;
             double scaleX;
             double scaleY;
@@ -233,10 +229,6 @@ namespace AstarPathFinder
             }
             Plane startPointPlane = Plane.WorldXY;
             startPointPlane.Origin = StartLocation;
-            //foreach (var abox in Boxes)
-            //{
-            //    abox.Transform(Transform.Scale(startPointPlane, scaleX,scaleY,scaleZ));
-            //}
             for (int x = 0; x < WorldLength; x++)
             {
                 for (int y = 0; y < WorldWidth; y++)
@@ -302,24 +294,7 @@ namespace AstarPathFinder
             }
             return false;
         }
-
-        private bool RectangleIntersectWithObstacle(Rectangle3d Rec, List<Brep> Obstacles, double Tolerence)
-        {
-            if (Obstacles.Count == 0) return false;
-            foreach (var obstacle in Obstacles)
-            {
-                Curve myRec = Rec.ToNurbsCurve();
-                Point3d[] outPoints;
-                Curve[] outCurve;
-                var intersect = Intersection.CurveBrep(myRec, obstacle, Tolerence, out outCurve, out outPoints);
-                if (intersect == true)
-                {
-                    if (outCurve.Length > 0 || outPoints.Length > 0) return true;
-                    if (obstacle.IsPointInside(Rec.Center, Tolerence, false)) return true;
-                }
-            }
-            return false;
-        }
+        
 
         
 

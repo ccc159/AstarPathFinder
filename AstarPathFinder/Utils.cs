@@ -29,17 +29,7 @@ namespace AstarPathFinder
             }
             return UnionBox;
         }
-
-        public static BoundingBox ScaleBoundingBox(BoundingBox b)
-        {
-            return b;
-            //if ((b.IsDegenerate(-1) == 2) || (b.IsDegenerate(-1) == 3)) return b;
-            //Point3d Centroid = b.Center;
-            //Brep Bbrep = b.ToBrep();
-            //Bbrep.Transform(Rhino.Geometry.Transform.Scale(Centroid, 1));
-            //return Bbrep.GetBoundingBox(false);
-        }
-
+        
         public static bool HaveDirectPath(Point3d StartPoint, Point3d EndPoint, List<Brep> Obstacles)
         {
             Line directPath = new Line(StartPoint,EndPoint);
