@@ -11,6 +11,7 @@ namespace AstarPathFinder
     public class SearchParameters
     {
         public Point3d[,,] Points { get; set; }
+        public Box[,,] Boxes { get; set; }
         public bool[,,] Environment { get; set; }
         public Point3d StartLocation { get; set; }
         public Point3d EndLocation { get; set; }
@@ -49,7 +50,7 @@ namespace AstarPathFinder
                 WorldLength += 4;
                 WorldWidth += 4;
                 WorldHeight += 4;
-                Box[,,] Boxes = new Box[WorldLength, WorldWidth, WorldHeight];
+                Boxes = new Box[WorldLength, WorldWidth, WorldHeight];
                 Points = new Point3d[WorldLength, WorldWidth, WorldHeight];
                 Environment = new bool[WorldLength, WorldWidth, WorldHeight];
                 for (int x = 0; x < WorldLength; x++)
@@ -59,15 +60,26 @@ namespace AstarPathFinder
                         for (int z = 0; z < WorldHeight; z++)
                         {
                             Boxes[x, y, z] = new Box(Plane.WorldXY, SegX[x], SegY[y], SegZ[z]);
-                            Points[x, y, z] = Boxes[x, y, z].Center;
-                            if(Boxes[x, y, z].Contains(StartPoint)) StartNodeID = new int[] { x, y, z };
+                            if (Boxes[x, y, z].Contains(StartPoint)) StartNodeID = new int[] { x, y, z };
                             if (Boxes[x, y, z].Contains(EndPoint)) EndNodeID = new int[] { x, y, z };
-                            if (BoxIntersectWithObstacle(Boxes[x, y, z], Obstacles, DPI/100))
+                        }
+                    }
+                }
+                AdjustBoxes();
+                for (int x = 0; x < WorldLength; x++)
+                {
+                    for (int y = 0; y < WorldWidth; y++)
+                    {
+                        for (int z = 0; z < WorldHeight; z++)
+                        {
+                            Points[x, y, z] = Boxes[x, y, z].Center;
+                            if (BoxIntersectWithObstacle(Boxes[x, y, z], Obstacles, DPI / 100))
                                 Environment[x, y, z] = false;
                             else Environment[x, y, z] = true;
                         }
                     }
                 }
+
             }
             else
             {
@@ -129,20 +141,30 @@ namespace AstarPathFinder
                     WorldHeight += 4;
                 }
                 
-                Box[,,] Boxes = new Box[WorldLength, WorldWidth, WorldHeight];
+                Boxes = new Box[WorldLength, WorldWidth, WorldHeight];
                 Points = new Point3d[WorldLength, WorldWidth, WorldHeight];
                 Environment = new bool[WorldLength, WorldWidth, WorldHeight];
-               for (int x = 0; x < WorldLength; x++)
+                for (int x = 0; x < WorldLength; x++)
                 {
                     for (int y = 0; y < WorldWidth; y++)
                     {
                         for (int z = 0; z < WorldHeight; z++)
                         {
                             Boxes[x, y, z] = new Box(Plane.WorldXY, SegX[x], SegY[y], SegZ[z]);
-                            Points[x, y, z] = Boxes[x, y, z].Center;
                             if (Boxes[x, y, z].Contains(StartPoint)) StartNodeID = new int[] { x, y, z };
                             if (Boxes[x, y, z].Contains(EndPoint)) EndNodeID = new int[] { x, y, z };
-                           if (BoxIntersectWithObstacle(Boxes[x, y, z], Obstacles, DPI / 100))
+                        }
+                    }
+                }
+                AdjustBoxes();
+                for (int x = 0; x < WorldLength; x++)
+                {
+                    for (int y = 0; y < WorldWidth; y++)
+                    {
+                        for (int z = 0; z < WorldHeight; z++)
+                        {
+                            Points[x, y, z] = Boxes[x, y, z].Center;
+                            if (BoxIntersectWithObstacle(Boxes[x, y, z], Obstacles, DPI / 100))
                                 Environment[x, y, z] = false;
                             else Environment[x, y, z] = true;
                         }
@@ -162,6 +184,69 @@ namespace AstarPathFinder
             WorldHeight = z;
             StartLocation = Points[startNodeID[0], startNodeID[1], startNodeID[2]];
             EndLocation = Points[endNodeID[0], endNodeID[1], endNodeID[2]];
+        }
+
+        private void AdjustBoxes()
+        {
+            Vector3d moveToStartPoint = this.StartLocation -this.Boxes[this.StartNodeID[0], this.StartNodeID[1], this.StartNodeID[2]].Center;
+            for (int x = 0; x < WorldLength; x++)
+            {
+                for (int y = 0; y < WorldWidth; y++)
+                {
+                    for (int z = 0; z < WorldHeight; z++)
+                    {
+                        Boxes[x, y, z].Transform(Transform.Translation(moveToStartPoint));
+                    }
+                }
+            }
+            //foreach (var abox in Boxes)
+            //{
+            //    abox.Transform(Transform.Translation(moveToStartPoint));
+            //}
+            Point3d ClosestToEndPoint = this.Boxes[this.EndNodeID[0], this.EndNodeID[1], this.EndNodeID[2]].Center;
+            double scaleX;
+            double scaleY;
+            double scaleZ;
+            if (Math.Abs((this.StartLocation.X - ClosestToEndPoint.X)) < 0.0001)
+            {
+                scaleX = 1;
+            }
+            else
+            {
+                scaleX = Math.Abs(this.StartLocation.X - this.EndLocation.X) / Math.Abs(this.StartLocation.X - ClosestToEndPoint.X);
+            }
+            if (Math.Abs((this.StartLocation.Y - ClosestToEndPoint.Y)) < 0.0001)
+            {
+                scaleY = 1;
+            }
+            else
+            {
+                scaleY = Math.Abs(this.StartLocation.Y - this.EndLocation.Y) / Math.Abs(this.StartLocation.Y - ClosestToEndPoint.Y);
+            }
+            if (Math.Abs((this.StartLocation.Z - ClosestToEndPoint.Z)) < 0.0001)
+            {
+                scaleZ = 1;
+            }
+            else
+            {
+                scaleZ = Math.Abs(this.StartLocation.Z - this.EndLocation.Z) / Math.Abs(this.StartLocation.Z - ClosestToEndPoint.Z);
+            }
+            Plane startPointPlane = Plane.WorldXY;
+            startPointPlane.Origin = StartLocation;
+            //foreach (var abox in Boxes)
+            //{
+            //    abox.Transform(Transform.Scale(startPointPlane, scaleX,scaleY,scaleZ));
+            //}
+            for (int x = 0; x < WorldLength; x++)
+            {
+                for (int y = 0; y < WorldWidth; y++)
+                {
+                    for (int z = 0; z < WorldHeight; z++)
+                    {
+                        Boxes[x, y, z].Transform(Transform.Scale(startPointPlane, scaleX, scaleY, scaleZ));
+                    }
+                }
+            }
         }
         
 

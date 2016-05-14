@@ -79,8 +79,6 @@ namespace AstarPathFinder
                     Message = "Something went wrong. Could not generate path. Check if start or end point inside obstacles.";
                     return;
                 }
-                Path.Add(EndPoint);
-                Path.Insert(0, StartPoint);
                 Curve = new Polyline(Path);
                 Running = true;
             }
